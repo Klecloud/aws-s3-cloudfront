@@ -1,3 +1,6 @@
+## 🌐 Live Site
+[My Portfolio](https://d37qyga18zwtr2.cloudfront.net/)
+
 # AWS S3 + CloudFront — Static Portfolio Site
 
 This project provisions a static website hosted on Amazon S3 and distributed globally via AWS CloudFront, using Terraform modules and security best practices.
