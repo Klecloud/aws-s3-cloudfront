@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KleberFilho — Cloud Solutions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #070b12;
+      --surface: #0d1521;
+      --border: #1a2a3a;
+      --accent: #00d4ff;
+      --accent2: #0077ff;
+      --accent3: #00ff9d;
+      --text: #e8f0fe;
+      --muted: #5a7a99;
+      --card: #0f1d2e;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      width: 12px; height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.1s ease;
+      mix-blend-mode: screen;
+    }
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transition: all 0.15s ease;
+      opacity: 0.5;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.15;
+    }
+    .orb-1 { width: 600px; height: 600px; background: var(--accent2); top: -200px; left: -200px; }
+    .orb-2 { width: 400px; height: 400px; background: var(--accent3); bottom: -100px; right: -100px; }
+
+    /* Nav */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(0,212,255,0.08);
+      backdrop-filter: blur(20px);
+      background: rgba(7,11,18,0.7);
+    }
+
+    .nav-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 8rem 3rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .hero-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .hero-label::before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .hero-name {
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.4s;
+    }
+
+    .hero-name span {
+      display: block;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-bio {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.6s;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.8s;
+    }
+
+    .btn {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.9rem 2rem;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: all 0.3s;
+      cursor: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 700;
+    }
+    .btn-primary:hover {
+      background: var(--accent3);
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0,212,255,0.4);
+    }
+
+    .btn-ghost {
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* Floating badge */
+    .hero-badge {
+      position: absolute;
+      right: 3rem;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+      animation: fadeIn 1s ease forwards 1.2s;
+    }
+
+    .badge-ring {
+      width: 220px;
+      height: 220px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      animation: spin 20s linear infinite;
+    }
+
+    .badge-ring::before {
+      content: 'AWS · TERRAFORM · CLOUD · IAC · ';
+      position: absolute;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .badge-center {
+      width: 140px;
+      height: 140px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: spin 20s linear infinite reverse;
+    }
+
+    .badge-center svg { width: 48px; height: 48px; margin-bottom: 0.5rem; }
+
+    .badge-center span {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* Section */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 3rem;
+    }
+
+    /* Skills */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .skill-card {
+      background: var(--card);
+      padding: 2rem;
+      transition: background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skill-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 0;
+      background: var(--accent);
+      transition: height 0.4s ease;
+    }
+
+    .skill-card:hover { background: #131f30; }
+    .skill-card:hover::before { height: 100%; }
+
+    .skill-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .skill-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .skill-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.25rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* Projects */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .project-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      cursor: none;
+    }
+
+    .project-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,212,255,0.05), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .project-card:hover {
+      border-color: rgba(0,212,255,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    .project-card:hover::after { opacity: 1; }
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .project-icon { font-size: 2rem; }
+
+    .project-arrow {
+      color: var(--muted);
+      font-size: 1.2rem;
+      transition: color 0.3s, transform 0.3s;
+    }
+    .project-card:hover .project-arrow {
+      color: var(--accent);
+      transform: translate(3px, -3px);
+    }
+
+    .project-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .project-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .project-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .stack-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(0,212,255,0.08);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 2px;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    /* Status */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent3);
+      animation: pulse 2s ease infinite;
+    }
+
+    .status-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent3);
+      letter-spacing: 0.1em;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    /* Contact */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .contact-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      transition: all 0.3s;
+      cursor: none;
+    }
+
+    .contact-card:hover {
+      border-color: rgba(0,212,255,0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    }
+
+    .contact-icon {
+      width: 48px; height: 48px;
+      background: rgba(0,212,255,0.08);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .contact-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .contact-value {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer p {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    footer span {
+      color: var(--accent);
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Divider */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { padding: 7rem 1.5rem 3rem; }
+      .hero-badge { display: none; }
+      section { padding: 4rem 1.5rem; }
+      .contact-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-logo">KD'OF // Cloud</div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero" id="about">
+    <div class="hero-inner">
+      <div class="hero-label">Available for new opportunities</div>
+      <h1 class="hero-name">
+        Kleber<br/>
+        <span></span><br/>
+        Filho
+      </h1>
+      <p class="hero-bio">
+        IT professional transitioning to Cloud, focused on AWS and cloud products.
+        Building scalable infrastructure through code, automation, and best practices.
+      </p>
+      <div class="hero-cta">
+        <a href="https://www.linkedin.com/in/kleber-d%E2%80%99oliveira-filho-989608232/" target="_blank" class="btn btn-primary">LinkedIn Profile</a>
+        <a href="https://github.com/Klecloud" target="_blank" class="btn btn-ghost">GitHub</a>
+      </div>
+    </div>
+
+    <div class="hero-badge">
+      <div class="badge-ring">
+        <div class="badge-center">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M40 10 L70 25 L70 55 L40 70 L10 55 L10 25 Z" stroke="#00d4ff" stroke-width="1.5" fill="none"/>
+            <path d="M40 20 L60 30 L60 50 L40 60 L20 50 L20 30 Z" stroke="#0077ff" stroke-width="1" fill="rgba(0,119,255,0.1)"/>
+            <circle cx="40" cy="40" r="8" fill="#00d4ff" opacity="0.8"/>
+            <line x1="40" y1="20" x2="40" y2="32" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+            <line x1="40" y1="48" x2="40" y2="60" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+            <line x1="20" y1="30" x2="32" y2="36" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+            <line x1="48" y1="44" x2="60" y2="50" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+            <line x1="60" y1="30" x2="48" y2="36" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+            <line x1="32" y1="44" x2="20" y2="50" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+          </svg>
+          <span>AWS CLOUD</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Skills -->
+  <section id="skills">
+    <div class="section-label reveal">Skills & Expertise</div>
+    <h2 class="section-title reveal">Technical Stack</h2>
+
+    <div class="skills-grid reveal">
+      <div class="skill-card">
+        <div class="skill-icon">☁️</div>
+        <div class="skill-name">AWS Cloud</div>
+        <div class="skill-desc">Hands-on experience with core AWS services including EC2, S3, VPC, IAM, RDS, Lambda and CloudFront.</div>
+        <div class="skill-tags">
+          <span class="tag">EC2</span>
+          <span class="tag">S3</span>
+          <span class="tag">IAM</span>
+          <span class="tag">VPC</span>
+          <span class="tag">RDS</span>
+          <span class="tag">Lambda</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">⚙️</div>
+        <div class="skill-name">Infrastructure as Code</div>
+        <div class="skill-desc">Provisioning cloud environments with Terraform using modular architecture, variables and remote state.</div>
+        <div class="skill-tags">
+          <span class="tag">Terraform</span>
+          <span class="tag">CloudFormation</span>
+          <span class="tag">Modules</span>
+          <span class="tag">State</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">🌐</div>
+        <div class="skill-name">Networking & Infrastructure</div>
+        <div class="skill-desc">Solid foundation in networking protocols, routing, firewalls, and enterprise infrastructure management.</div>
+        <div class="skill-tags">
+          <span class="tag">TCP/IP</span>
+          <span class="tag">DNS</span>
+          <span class="tag">Firewall</span>
+          <span class="tag">VPN</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">🗄️</div>
+        <div class="skill-name">Database</div>
+        <div class="skill-desc">Experience with relational and cloud-managed databases, backup strategies and basic administration.</div>
+        <div class="skill-tags">
+          <span class="tag">MySQL</span>
+          <span class="tag">RDS</span>
+          <span class="tag">Backup</span>
+          <span class="tag">Admin</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">🛠️</div>
+        <div class="skill-name">IT Support N2</div>
+        <div class="skill-desc">Advanced troubleshooting of systems, hardware, software and network issues in enterprise environments.</div>
+        <div class="skill-tags">
+          <span class="tag">Windows</span>
+          <span class="tag">Linux</span>
+          <span class="tag">Active Directory</span>
+          <span class="tag">ITSM</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">🔄</div>
+        <div class="skill-name">Agile & Scrum</div>
+        <div class="skill-desc">Working knowledge of Scrum framework, sprint planning, daily standups and agile delivery practices.</div>
+        <div class="skill-tags">
+          <span class="tag">Scrum</span>
+          <span class="tag">Kanban</span>
+          <span class="tag">Sprints</span>
+          <span class="tag">Jira</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Projects -->
+  <section id="projects">
+    <div class="section-label reveal">Portfolio</div>
+    <h2 class="section-title reveal">Projects</h2>
+
+    <div class="projects-grid reveal">
+      <a href="https://github.com/Klecloud/aws-ec2-iac" target="_blank" class="project-card">
+        <div class="project-header">
+          <div class="project-icon">🏗️</div>
+          <div class="project-arrow">↗</div>
+        </div>
+        <div class="status-bar">
+          <div class="status-dot"></div>
+          <span class="status-text">Live on GitHub</span>
+        </div>
+        <div class="project-title">AWS EC2 — Infrastructure as Code</div>
+        <div class="project-desc">
+          Complete AWS environment provisioned with Terraform using modular architecture.
+          Includes VPC, public subnet, internet gateway, security group and EC2 instance
+          with Apache auto-install via User Data.
+        </div>
+        <div class="project-stack">
+          <span class="stack-tag">Terraform</span>
+          <span class="stack-tag">AWS EC2</span>
+          <span class="stack-tag">VPC</span>
+          <span class="stack-tag">IAM</span>
+          <span class="stack-tag">Security Groups</span>
+        </div>
+      </a>
+
+      <div class="project-card" style="border-style: dashed; opacity: 0.6;">
+        <div class="project-header">
+          <div class="project-icon">🌍</div>
+          <div class="project-arrow" style="font-size:0.8rem; color: var(--muted);">In Progress</div>
+        </div>
+        <div class="project-title">S3 + CloudFront Static Site</div>
+        <div class="project-desc">
+          Static website hosted on Amazon S3 and distributed globally via CloudFront CDN.
+          Provisioned entirely with Terraform — this portfolio site.
+        </div>
+        <div class="project-stack">
+          <span class="stack-tag">Terraform</span>
+          <span class="stack-tag">AWS S3</span>
+          <span class="stack-tag">CloudFront</span>
+          <span class="stack-tag">CDN</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Certifications -->
+  <section>
+    <div class="section-label reveal">Credentials</div>
+    <h2 class="section-title reveal">Certifications</h2>
+
+    <div class="skills-grid reveal">
+      <div class="skill-card">
+        <div class="skill-icon">🎓</div>
+        <div class="skill-name">AWS Cloud Foundations</div>
+        <div class="skill-desc">AWS Academy — foundational certification covering core AWS concepts, services and cloud computing principles.</div>
+        <div class="skill-tags"><span class="tag">AWS Academy</span><span class="tag">Completed</span></div>
+      </div>
+
+      <div class="skill-card" style="opacity:0.6;">
+        <div class="skill-icon">📋</div>
+        <div class="skill-name">AWS Cloud Practitioner</div>
+        <div class="skill-desc">Official AWS certification validating foundational knowledge of AWS Cloud services, pricing and architecture.</div>
+        <div class="skill-tags"><span class="tag">AWS</span><span class="tag">In Progress</span></div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon">🏛️</div>
+        <div class="skill-name">Technologist Degree — Cloud</div>
+        <div class="skill-desc">Two-year technology degree focused on cloud computing, infrastructure and modern IT solutions.</div>
+        <div class="skill-tags"><span class="tag">2 Years</span><span class="tag">Completed</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Contact -->
+  <section id="contact">
+    <div class="section-label reveal">Get in Touch</div>
+    <h2 class="section-title reveal">Contact</h2>
+
+    <div class="contact-grid reveal">
+      <a href="https://www.linkedin.com/in/kleber-d%E2%80%99oliveira-filho-989608232/" target="_blank" class="contact-card">
+        <div class="contact-icon">💼</div>
+        <div>
+          <div class="contact-label">LinkedIn</div>
+          <div class="contact-value">Kleber  Filho</div>
+        </div>
+      </a>
+
+      <a href="https://github.com/Klecloud" target="_blank" class="contact-card">
+        <div class="contact-icon">🐙</div>
+        <div>
+          <div class="contact-label">GitHub</div>
+          <div class="contact-value">github.com/Klecloud</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 <span>Kleber  Filho</span> — Cloud Solutions Engineer</p>
+    <p>Built with <span>HTML · CSS · AWS S3 · CloudFront · Terraform</span></p>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx - 6 + 'px';
+      cursor.style.top = my - 6 + 'px';
+    });
+
+    function animateRing() {
+      rx += (mx - rx - 18) * 0.12;
+      ry += (my - ry - 18) * 0.12;
+      ring.style.left = rx + 'px';
+      ring.style.top = ry + 'px';
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.transform = 'scale(2)';
+        ring.style.transform = 'scale(1.5)';
+        ring.style.borderColor = 'var(--accent3)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.transform = 'scale(1)';
+        ring.style.transform = 'scale(1)';
+        ring.style.borderColor = 'var(--accent)';
+      });
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 100);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    reveals.forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
